@@ -1,0 +1,30 @@
+services:
+  mysql-db:
+    image: mysql:8.0
+    container_name: helpdesk-mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: helpdesk_db
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    ports:
+      - "3306:3306"   # ← CORRIGÉ : MySQL utilise le port 3306, pas 8080
+    networks:
+      - helpdesk-net
+
+  app:
+    build: .
+    container_name: helpdesk-app
+    restart: on-failure
+    ports:
+      - "8085:8080"   # ← CORRIGÉ : on garde 8085 pour éviter le conflit
+    depends_on:
+      - mysql-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/helpdesk_db?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=
+    networks:
+      - helpdesk-net
+
+networks:
+  helpdesk-net:
